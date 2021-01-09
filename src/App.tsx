@@ -3,7 +3,14 @@ import { Redirect, Route } from 'react-router-dom';
 import { IonApp, IonRouterOutlet } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 
-/* Core CSS required for Ionic components to work properly */
+import CarList from "./components/car/CarList";
+import CarForm from "./components/car/CarForm";
+import {CarProvider} from "./providers/car/CarProvider";
+import {AuthProvider} from "./providers/auth/AuthProvider";
+import Login from "./components/auth/Login";
+import PrivateRoute from './routes/PrivageRoute';
+
+/* Core CSS required for Ionic car to work properly */
 import '@ionic/react/css/core.css';
 
 /* Basic CSS for apps built with Ionic */
@@ -21,22 +28,27 @@ import '@ionic/react/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
-import CarList from "./components/CarList";
-import CarForm from "./components/CarForm";
-import {CarProvider} from "./components/CarProvider";
+import Logout from "./components/auth/Logout";
+import NetworkWrapper from "./utils/NetworkWrapper";
 
 const App: React.FC = () => (
     <IonApp>
-        <CarProvider>
-            <IonReactRouter>
-                <IonRouterOutlet>
-                    <Route exact path="/cars" component={CarList} />
-                    <Route exact path="/car" component={CarForm} />
-                    <Route exact path="/car/:id" component={CarForm} />
-                    <Route exact path="/" render={() => <Redirect to="/cars" />} />
-                </IonRouterOutlet>
-            </IonReactRouter>
-        </CarProvider>
+        <IonReactRouter>
+            <IonRouterOutlet>
+                <NetworkWrapper>
+                    <AuthProvider>
+                        <Route exact path="/login" component={Login} />
+                        <Route exact path="/logout" component={Logout} />
+                        <CarProvider>
+                            <PrivateRoute exact path="/cars" component={CarList} />
+                            <PrivateRoute exact path="/car" component={CarForm} />
+                            <PrivateRoute exact path="/car/:id" component={CarForm} />
+                        </CarProvider>
+                        <Route exact path="/" render={() => <Redirect to="/cars" />} />
+                    </AuthProvider>
+                </NetworkWrapper>
+            </IonRouterOutlet>
+        </IonReactRouter>
     </IonApp>
 );
 

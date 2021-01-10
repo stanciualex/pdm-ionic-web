@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import { IonApp, IonRouterOutlet } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
@@ -6,9 +6,9 @@ import { IonReactRouter } from '@ionic/react-router';
 import CarList from "./components/car/CarList";
 import CarForm from "./components/car/CarForm";
 import {CarProvider} from "./providers/car/CarProvider";
-import {AuthProvider} from "./providers/auth/AuthProvider";
+import {AuthContext, AuthProvider} from "./providers/auth/AuthProvider";
 import Login from "./components/auth/Login";
-import PrivateRoute from './routes/PrivageRoute';
+import PrivateRoute from './routes/PrivateRoute';
 
 /* Core CSS required for Ionic car to work properly */
 import '@ionic/react/css/core.css';
@@ -42,9 +42,9 @@ const App: React.FC = () => (
                         <CarProvider>
                             <PrivateRoute exact path="/cars" component={CarList} />
                             <PrivateRoute exact path="/car" component={CarForm} />
-                            <PrivateRoute exact path="/car/:id" component={CarForm} />
+                            <PrivateRoute exact path="/car/:id?" component={CarForm} />
                         </CarProvider>
-                        <Route exact path="/" render={() => <Redirect to="/cars" />} />
+                        <Redirect from="/" to="/login"/>
                     </AuthProvider>
                 </NetworkWrapper>
             </IonRouterOutlet>

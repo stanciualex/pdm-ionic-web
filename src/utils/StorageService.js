@@ -74,6 +74,7 @@ class StorageService {
         await Promise.all(carsToSync.map(car => {
             if (car.localOnly) {
                 delete car._id;
+                delete car.localOnly;
             }
 
             saveFunc(car, true, true);

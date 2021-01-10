@@ -10,8 +10,10 @@ const Login = () => {
 
     const handleLogin = () => login(username, password);
 
+    console.log('[login] isAuthenticated', isAuthenticated);
+
     if (isAuthenticated) {
-        return <Redirect to="/" />;
+        return <Redirect to="/cars" />;
     }
 
     return (

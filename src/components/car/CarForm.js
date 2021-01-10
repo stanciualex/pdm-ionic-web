@@ -36,7 +36,7 @@ const CarForm = ({ history, match }) => {
     const { networkStatus } = useNetwork();
     const isOnline = networkStatus.connected;
     const { photos, takePhoto, deletePhoto } = usePhotoGallery();
-    const myLocation = useMyLocation();
+    const myLocation = useMyLocation(isOnline);
 
     useEffect(() => {
         const photoBtnElem = document.getElementById('take-photo-btn');
@@ -130,10 +130,12 @@ const CarForm = ({ history, match }) => {
             photo,
             lat: coords.lat,
             lng: coords.lng,
+            version: 1,
         };
 
         if (car) {
             inputData._id = car._id;
+            inputData.version = car.version || 1;
         }
 
         await saveCar(inputData, isOnline);
@@ -163,6 +165,7 @@ const CarForm = ({ history, match }) => {
         setCoords({ lat, lng });
     };
 
+    console.log('car', car);
     return (
         <IonPage>
             <IonHeader>

@@ -25,10 +25,19 @@ export const newWebSocket = (token, onMessage) => {
     }
 };
 
-export const getCars = async (token, search, page, limit) => {
+export const getCars = async (token, search, page, limit, filters) => {
     let query = '';
     if (search) {
         query = `?search=${search}`;
+    } else if (filters) {
+        const { hasStartDate, startDate, hasEndDate, endDate, type } = filters;
+        const params = new URLSearchParams({
+            startDate: hasStartDate && startDate ? startDate : undefined,
+            endDate: hasEndDate && endDate ? endDate : undefined,
+            type: type ? type : undefined,
+        });
+
+        query = `?${params}`;
     } else if (page && limit) {
         query = `?page=${page}&limit=${limit}`;
     }

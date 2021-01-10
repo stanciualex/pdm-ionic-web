@@ -15,6 +15,7 @@ const initialState = {
     page: 1,
     totalPages: 1,
     search: '',
+    filters: null,
 };
 
 const addOrUpdateCar = (cars, car) => {
@@ -65,7 +66,7 @@ const reducer = (state = initialState, action) => {
         case types.SET_PAGE:
             return updateObject(state, { page: payload.page });
         case types.SET_SEARCH:
-            return updateObject(state, { search: payload.search });
+            return updateObject(state, { search: payload.search, filters: payload.filters });
         default:
             return { ...state };
     }
@@ -75,21 +76,20 @@ export const CarContext = createContext(initialState);
 
 export const CarProvider = ({ children }) => {
     const [state, dispatch] = useReducer(reducer, initialState);
-    const { cars, loading, requestError, page, totalPages, search, offlineMessage } = state;
+    const { cars, loading, requestError, page, totalPages, search, offlineMessage, filters } = state;
     const { token } = useContext(AuthContext);
     const { networkStatus } = useNetwork();
 
     useEffect(() => {
         let canceled = false;
         const fetchCars = async () => {
-            console.log('networkStatus.connected', networkStatus.connected);
             if (networkStatus.connected) {
                 try {
                     if (search && page > 1) {
                         dispatch({ type: types.SET_PAGE, payload: { page: 1 } });
                     }
                     dispatch({type: types.FETCH_CARS_STARTED});
-                    const fetchResponse = await getCars(token, search, page, CARS_LIMIT);
+                    const fetchResponse = await getCars(token, search, page, CARS_LIMIT, filters);
                     console.log('fetchResponse', fetchResponse);
 
                     if (!canceled) {
@@ -115,13 +115,13 @@ export const CarProvider = ({ children }) => {
         return () => {
             canceled = true;
         }
-    }, [token, page, search, networkStatus.connected]);
+    }, [token, page, search, networkStatus.connected, filters]);
 
     useEffect(() => {
         let canceled = false;
 
         const closeWebSocket = newWebSocket(token, (message) => {
-            if (canceled) {
+            if (canceled || !networkStatus.connected) {
                 return;
             }
 
@@ -139,7 +139,7 @@ export const CarProvider = ({ children }) => {
             canceled = true;
             closeWebSocket();
         };
-    }, [token]);
+    }, [token, networkStatus.connected]);
 
     useEffect(() => {
         if (networkStatus.connected) {
@@ -159,6 +159,9 @@ export const CarProvider = ({ children }) => {
                     dispatch({ type: types.SAVE_CAR_SUCCEEDED, payload: { car: newCar } });
                 }
             } catch (err) {
+                if (err.versionError) {
+                    alert(err.message);
+                }
                 dispatch({ type: types.SAVE_CAR_FAILED, payload: { error: err.message } });
             }
         } else {
@@ -196,15 +199,15 @@ export const CarProvider = ({ children }) => {
         }
     };
     
-    const onSearchChangeCallback = (value) => {
-        dispatch({ type: types.SET_SEARCH, payload: { search: value } });
+    const onSearchChangeCallback = (value, filters) => {
+        dispatch({ type: types.SET_SEARCH, payload: { search: value, filters } });
     };
 
     const saveCar = useCallback(saveCarCallback, [token]);
     const deleteCar = useCallback(deleteCarCallback, [token]);
     const loadMore = useCallback(loadMoreCallback, [token, page, totalPages]);
     const onSearchChange = useCallback(onSearchChangeCallback, []);
-    const value = { cars, loading, requestError, saveCar, deleteCar, page, totalPages, loadMore, search, onSearchChange, offlineMessage };
+    const value = { cars, loading, requestError, saveCar, deleteCar, page, totalPages, loadMore, search, onSearchChange, offlineMessage, filters };
 
     console.log('search', state);
     return (
